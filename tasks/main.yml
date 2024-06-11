@@ -43,6 +43,7 @@
       os_ignore_users:
         - vagrant
         - kitchen
+
     - name: Ensure system accounts' login permissions are not disturbed
       lineinfile:
         path: /etc/passwd
@@ -71,6 +72,7 @@
         recurse: yes
       with_fileglob:
         - '/home/*/ssh'
+
     - name: Remove unsupported filesystem modules
       command: "rmmod {{ item }}"
       loop:
@@ -105,10 +107,10 @@
         regexp: '^{{ item.regexp }}'
         line: "{{ item.line }}"
       loop:
-        - { regexp: 'minlen', line: 'minlen = 8' }  # Minimum password length
-        - { regexp: 'dcredit', line: 'dcredit = -1' }  # Minimum number of digits
-        - { regexp: 'ucredit', line: 'ucredit = -1' }  # Minimum number of uppercase characters
-        - { regexp: 'ocredit', line: 'ocredit = -1' }  # Minimum number of special characters
-        - { regexp: 'lcredit', line: 'lcredit = -1' }  # Minimum number of lowercase characters
+        - {regexp: 'minlen', line: 'minlen = 8'}  
+        - {regexp: 'dcredit', line: 'dcredit = -1'} 
+        - {regexp: 'ucredit', line: 'ucredit = -1'} 
+        - {regexp: 'ocredit', line: 'ocredit = -1'}  
+        - {regexp: 'lcredit', line: 'lcredit = -1'}  
 
   
