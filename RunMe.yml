@@ -1,0 +1,23 @@
+#You'll need to run this file to execute the Ansible directory
+#Think of it as the main executor of all the branches  
+#All the other folders need to be in the same directory as this file to run properly :D  
+
+---
+- hosts: all
+  connection: ssh
+  become: true
+  become_method: sudo
+  become_user: root
+  tasks: 
+
+    -include_role:
+      name: defaults
+
+    -include_role:
+      name: handlers
+
+    -include_role:
+      name: meta
+
+    -include_role:
+      name: tasks
