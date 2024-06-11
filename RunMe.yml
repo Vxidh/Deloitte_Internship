@@ -9,7 +9,6 @@
   become_method: sudo
   become_user: root
   tasks: 
-
     -include_role:
       name: defaults
 
