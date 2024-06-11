@@ -1,0 +1,91 @@
+---
+- name: OS Hardening Playbook
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Ensure firewall is enabled and configured
+      service:
+        name: firewalld
+        state: started
+        enabled: yes
+
+    - name: Add specific firewall rules
+      firewalld:
+        service: "{{ item }}"
+        state: enabled
+        immediate: yes
+      loop:
+        - ssh
+        - http
+        - https
+
+    - name: Disable root login via SSH
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PermitRootLogin'
+        line: 'PermitRootLogin no'
+      notify:
+        - restart sshd
+
+    - name: Ensure password authentication is disabled
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+      notify:
+        - restart sshd
+
+    - name: Ensure SSH protocol is set to 2
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^Protocol'
+        line: 'Protocol 2'
+      notify:
+        - restart sshd
+
+    - name: Disable unused network protocols
+      package:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - telnet
+        - rsh-server
+        - rsh
+        - ypserv
+        - tftp
+        - tftp-server
+
+    - name: Remove insecure packages
+      package:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - rsh
+        - telnet
+        - finger
+
+    - name: Ensure permissions on /etc/shadow are properly set
+      file:
+        path: /etc/shadow
+        owner: root
+        group: root
+        mode: '0000'
+
+    - name: Disable unused services
+      systemd:
+        name: "{{ item }}"
+        state: stopped
+        enabled: no
+      loop:
+        - rpcbind
+        - nfs
+        - nfs-server
+        - nfs-lock
+        - nfs-idmap
+
+  handlers:
+    - name: restart sshd
+      service:
+        name: sshd
+        state: restarted

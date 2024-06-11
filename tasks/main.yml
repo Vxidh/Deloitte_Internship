@@ -1,0 +1,114 @@
+---
+- name: Manage cron jobs
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Ensure cron package is installed
+      package:
+        name: cron
+        state: present
+
+    - name: Ensure cron service is running
+      service:
+        name: cron
+        state: started
+        enabled: yes
+
+    - name: Add a cron job
+      cron:
+        name: "Run script daily"
+        minute: 0
+        hour: 0
+        job: "/path/to/your/script.sh"
+        state: present
+
+    - name: Remove a cron job
+      cron:
+        name: "Remove unused job"
+        job: "/path/to/unused/script.sh"
+        state: absent
+    - name: Remove xinetd, inetd, ypserv, telnet-server, rsh-server, prelink
+      package:
+        name: "{{ item }}"
+        state: absent
+      loop:
+        - xinetd
+        - inetd
+        - ypserv
+        - telnet-server
+        - rsh-server
+        - prelink
+    vars:
+      os_ignore_users:
+        - vagrant
+        - kitchen
+    - name: Ensure system accounts' login permissions are not disturbed
+      lineinfile:
+        path: /etc/passwd
+        regexp: '^{{ item }}:'
+        line: '{{ item }}:*:'
+        state: present
+      loop: "{{ os_ignore_users }}"
+      when: item != 'root'  # To ensure that root is not in the list of ignored users
+
+    #Disabling chmod 700 for home folders of regular users  
+    - name: Set correct permissions for regular users' home folders
+      file:
+        path: "/home/{{ item }}"
+        owner: "{{ item }}"
+        group: "{{ item }}"
+        mode: 'u+rwx,g+rx,o+rx'  # Set permissions to rwxr-xr-x
+        recurse: yes
+      with_fileglob:
+        - '/home/*'
+      when: item != 'lost+found'  # Exclude lost+found directory
+
+    - name: Set permissions for .ssh directory inside home folders
+      file:
+        path: "/home/{{ item }}/ssh"
+        mode: '0700'  # Set permissions to 0700 for .ssh directory
+        recurse: yes
+      with_fileglob:
+        - '/home/*/ssh'
+    - name: Remove unsupported filesystem modules
+      command: "rmmod {{ item }}"
+      loop:
+        - cramfs
+        - freevxfs
+        - jffs2
+        - hfs
+        - hfsplus
+        - squashfs
+        - udf
+        - vfat
+
+    - name: Remove unsupported network protocol modules
+      command: "rmmod {{ item }}"
+      loop:
+        - dccp
+        - rds
+        - sctp
+        - tipc
+
+    - name: Modify user PATH variable
+      lineinfile:
+        path: /etc/environment
+        line: 'PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"'
+        regexp: '^PATH='
+      notify:
+        - reload login shell
+
+    - name: Set password quality requirements
+      lineinfile:
+        path: /etc/security/pwquality.conf
+        regexp: '^{{ item.regexp }}'
+        line: "{{ item.line }}"
+      loop:
+        - { regexp: 'minlen', line: 'minlen = 8' }  # Minimum password length
+        - { regexp: 'dcredit', line: 'dcredit = -1' }  # Minimum number of digits
+        - { regexp: 'ucredit', line: 'ucredit = -1' }  # Minimum number of uppercase characters
+        - { regexp: 'ocredit', line: 'ocredit = -1' }  # Minimum number of special characters
+        - { regexp: 'lcredit', line: 'lcredit = -1' }  # Minimum number of lowercase characters
+
+  
