@@ -113,4 +113,53 @@
         - {regexp: 'ocredit', line: 'ocredit = -1'}  
         - {regexp: 'lcredit', line: 'lcredit = -1'}  
 
-  
+    - name: Deny all other incoming connections by default
+      ufw:
+        default: deny
+        direction: incoming
+    
+    - name: Configure nftables
+      copy:
+        dest: /etc/nftables.conf
+        content:
+          #!/usr/sbin/nft -f
+          flush ruleset
+
+          table inet filter {
+              chain input{
+                  type filter hook input priority 0; policy drop;
+                  # Allow established connections
+                  ct state established, related accept
+                  
+                  #Allow for loopback traffic
+                  iif "lo" accept
+                  
+                  #Allow SSH
+                  tcp dport 22 accept
+                  
+                  #Allow HTTP and HTTPS connection
+                  tcp dport 80 accept
+                  tcp dport 443 accept
+                  
+                  #Drop all other traffic
+                  counter drop
+                }
+                chain forward{
+                type filter hook forward priority 0; policy drop;
+                }
+                chain output{
+                type filter hook output priority 0l policy accept;
+                }
+          }
+
+    - name: Apply nftables rules
+      command: nft -f /etc/nftables.conf
+    
+    - name: Create a cron job for AIDE
+      cron:
+        name: AIDE integrity check
+        minute: "0"
+        hour: "3"
+        job: "/usr/sbin/aide --check"
+    
+    - name: 

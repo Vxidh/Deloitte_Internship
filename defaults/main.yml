@@ -84,8 +84,64 @@
         - nfs-lock
         - nfs-idmap
 
-  handlers:
-    - name: restart sshd
+    - name: Enable UFW
+      ufw:
+        state: enabled
+        policy: enabled
+
+    - name: Ensure UFW is installed
+      apt:
+        name: ufw
+        state: present
+    
+    - name: Allow SSH
+      ufw:
+        rule: allow
+        name: 'OpenSSH'
+
+    - name: Allow specific ports
+      ufw:
+        rule: allow
+        port: '{{item}}'
+      loop:
+        - '80'
+        - '443'
+    - name: Ensure nftables is installed
+      package:
+        name: nftables
+        state: present
+    
+    - name: Ensure AIDE is installed
+      package:
+        name: aide
+        state: present
+    
+    - name: Initialize AIDE
+      command: /usr/sbin/aide --init
+      args:
+        creates: /var/lib/aide/aide.db.new.gz
+    
+    - name: Copy the AIDE database
+      copy:
+        src: /var/lib/aide/aide.db.new.gz
+        dest: /var/lib/aide/aide.db.gz
+        remote_src: yes
+
+    - name: Ensure AppArmor is installed
       service:
-        name: sshd
-        state: restarted
+        name: apparmor
+        state: started
+        enabled: yes
+
+    - name: Ensure AppArmor is enabled in boot params
+      lineinfile: 
+        path: /etc/default/grub
+        regexp: '^GRUB_CMDLINE_LINUX_DEFAULT=".*'
+        line:'GRUB_CMDLINE_LINUX_DEFAULT="apprarmor=1 security=apparmor'
+      notify: update-grub
+    
+    - name: Load AppArmor profiles
+      command: "aa-enforce /etc/apparmor.d"
+
+    - name: update-grub
+      command: grub2-mfconfig -o /boot/grub2/grub.config
