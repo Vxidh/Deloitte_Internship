@@ -27,3 +27,99 @@
       service:
         name: auditd
         state: reloaded
+
+    - name: Ensure AIDE is installed
+      package:
+        name: aide
+        state: present
+    
+    - name: Ensure nftables is installed
+      package:
+        name: nftables
+        state: present
+
+    - name: Ensure AppArmor is installed
+      service:
+        name: apparmor
+        state: started
+        enabled: yes
+    
+    - name: Ensure UFW is installed
+      apt:
+        name: ufw
+        state: present
+    
+    - name: Enable UFW
+      ufw:
+        state: enabled
+        policy: enabled
+    
+    - name: Ensure firewall is enabled and configured
+      service:
+        name: firewalld
+        state: started
+        enabled: yes
+    
+    - name: Disabling Avahi-Daemon (Used for discovering devices on the network)
+      service:
+        name: avahi-daemon
+        state: stopped
+        enabled: no
+
+    - name: Disable and stop bluetooth
+      service:
+        name: bluetooth
+        state: stopped
+        enabled: no
+
+    - name: Disable and stop cups
+      service:
+        name: cups
+        state: stopped
+        enabled: no
+
+    - name: Disable and stop rpcbind
+      service:
+        name: rpcbind
+        state: stopped
+        enabled: no
+
+    - name: Disable and stop smb
+      service:
+        name: smb
+        state: stopped
+        enabled: no
+
+    - name: Disable and stop vsftpd
+      service:
+        name: vsftpd
+        state: stopped
+        enabled: no
+
+    - name: Disable and stop xinetd
+      service:
+        name: xinetd
+        state: stopped
+        enabled: no
+
+    - name: Disable and stop apache2
+      service:
+        name: apache2
+        state: stopped
+        enabled: no
+    
+    - name: Ensure cron package is installed
+      package:
+        name: cron
+        state: present
+
+    - name: Ensure cron service is running
+      service:
+        name: cron
+        state: started
+        enabled: yes
+
+    
+
+
+    

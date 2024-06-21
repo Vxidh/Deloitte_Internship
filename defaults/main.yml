@@ -4,11 +4,6 @@
   become: yes
 
   tasks:
-    - name: Ensure firewall is enabled and configured
-      service:
-        name: firewalld
-        state: started
-        enabled: yes
 
     - name: Add specific firewall rules
       firewalld:
@@ -83,16 +78,6 @@
         - nfs-server
         - nfs-lock
         - nfs-idmap
-
-    - name: Enable UFW
-      ufw:
-        state: enabled
-        policy: enabled
-
-    - name: Ensure UFW is installed
-      apt:
-        name: ufw
-        state: present
     
     - name: Allow SSH
       ufw:
@@ -106,15 +91,6 @@
       loop:
         - '80'
         - '443'
-    - name: Ensure nftables is installed
-      package:
-        name: nftables
-        state: present
-    
-    - name: Ensure AIDE is installed
-      package:
-        name: aide
-        state: present
     
     - name: Initialize AIDE
       command: /usr/sbin/aide --init
@@ -126,12 +102,6 @@
         src: /var/lib/aide/aide.db.new.gz
         dest: /var/lib/aide/aide.db.gz
         remote_src: yes
-
-    - name: Ensure AppArmor is installed
-      service:
-        name: apparmor
-        state: started
-        enabled: yes
 
     - name: Ensure AppArmor is enabled in boot params
       lineinfile: 

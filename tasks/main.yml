@@ -4,17 +4,6 @@
   become: yes
 
   tasks:
-    - name: Ensure cron package is installed
-      package:
-        name: cron
-        state: present
-
-    - name: Ensure cron service is running
-      service:
-        name: cron
-        state: started
-        enabled: yes
-
     - name: Add a cron job
       cron:
         name: "Run script daily"
