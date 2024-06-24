@@ -150,5 +150,3 @@
         minute: "0"
         hour: "3"
         job: "/usr/sbin/aide --check"
-    
-    - name: 
