@@ -1,5 +1,5 @@
 ---
-- name: Manage cron jobs
+- name: Tasks to ensure OS hardening
   hosts: all
   become: yes
 

@@ -1,5 +1,5 @@
 ---
-- name: Restart auditd and remount filesystems
+- name: To enable/disable services and filesystems
   hosts: all
   become: yes
 

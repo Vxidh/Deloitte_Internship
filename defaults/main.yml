@@ -1,5 +1,5 @@
 ---
-- name: OS Hardening Playbook
+- name: To set defaults for the server
   hosts: all
   become: yes
 
